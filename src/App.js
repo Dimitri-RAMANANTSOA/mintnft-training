@@ -15,11 +15,29 @@ function App() {
   const [price, setPrice] = useState();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loader, setLoader] = useState(true);
 
   useEffect(() => {
     requestAccount();
     getPrice();
+    setLoader(false);
   },[])
+
+  window.ethereum.addListener('connect', async(response) => {
+    requestAccount();
+  })
+
+  window.ethereum.on('accountsChanged', () => {
+    window.location.reload();
+  })
+
+  window.ethereum.on('chainChanged', () => {
+    window.location.reload();
+  })
+
+  window.ethereum.on('disconnect', () => {
+    window.location.reload();
+  })
 
   async function requestAccount() {
     if(typeof window.ethereum !== 'undefined') {
@@ -75,7 +93,15 @@ function App() {
 
   return (
     <div className="App">
-      <button onClick={mint}>MINT a VLM NFT</button>
+      {!loader &&
+        accounts.length > 0 ?
+        <>
+        <p className="connected">You are connected with account : {accounts[0]}</p>
+        <button onClick={mint}>MINT a VLM NFT</button>
+        </>
+        :
+        <p className="notconnected">You are not connected</p>
+      }
       {error && <p className="error">{error}</p>}
       {success && <p className="success">{success}</p>}
     </div>
